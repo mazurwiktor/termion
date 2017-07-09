@@ -16,7 +16,7 @@ use std::fmt;
 use raw::CONTROL_SEQUENCE_TIMEOUT;
 use std::io::{self, Write, Read};
 use std::time::{SystemTime, Duration};
-use async::async_stdin;
+use async::delimited_async_stdin;
 use std::env;
 
 /// A terminal color.
@@ -185,7 +185,7 @@ pub trait DetectColors {
 
 impl<W: Write> DetectColors for W {
     fn available_colors(&mut self) -> io::Result<u16> {
-        let mut stdin = async_stdin();
+        let mut stdin = delimited_async_stdin(7u8);
 
         if detect_color(self, &mut stdin, 0)? {
             // OSC 4 is supported, detect how many colors there are.

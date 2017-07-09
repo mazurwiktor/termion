@@ -2,7 +2,7 @@
 
 use std::fmt;
 use std::io::{self, Write, Error, ErrorKind, Read};
-use async::async_stdin;
+use async::delimited_async_stdin;
 use std::time::{SystemTime, Duration};
 use raw::CONTROL_SEQUENCE_TIMEOUT;
 
@@ -91,7 +91,8 @@ pub trait DetectCursorPos {
 
 impl<W: Write> DetectCursorPos for W {
     fn cursor_pos(&mut self) -> io::Result<(u16, u16)> {
-        let mut stdin = async_stdin();
+        let delimiter = b'R';
+        let mut stdin = delimited_async_stdin(delimiter);
 
         // Where is the cursor?
         // Use `ESC [ 6 n`.
@@ -105,7 +106,7 @@ impl<W: Write> DetectCursorPos for W {
         let now = SystemTime::now();
 
         // Either consume all data up to R or wait for a timeout.
-        while buf[0] != b'R' && now.elapsed().unwrap() < timeout {
+        while buf[0] != delimiter && now.elapsed().unwrap() < timeout {
             if stdin.read(&mut buf)? > 0 {
                 read_chars.push(buf[0]);
             }

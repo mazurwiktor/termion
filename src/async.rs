@@ -26,6 +26,20 @@ pub fn async_stdin() -> AsyncReader {
     AsyncReader { recv: recv }
 }
 
+/// Construct an asynchronous handle to the TTY standard input like [async_stdin](fn.async_stdin.html) but stops reading after given delimiter.
+pub fn delimited_async_stdin(delimiter :u8) -> AsyncReader {
+    let (send, recv) = mpsc::channel();
+
+    thread::spawn(move || for i in tty::get_tty().unwrap().bytes() {
+        let delimiter_reached = i.is_ok() && i.as_ref().unwrap() == &delimiter;
+        if send.send(i).is_err() || delimiter_reached {
+            return;
+        }
+    });
+
+    AsyncReader { recv: recv }
+}
+
 /// An asynchronous reader.
 ///
 /// This acts as any other stream, with the exception that reading from it won't block. Instead,

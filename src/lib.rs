@@ -18,7 +18,7 @@ extern crate libc;
 mod termios;
 
 mod async;
-pub use async::{AsyncReader, async_stdin};
+pub use async::{AsyncReader, async_stdin, delimited_async_stdin};
 
 mod size;
 pub use size::terminal_size;
